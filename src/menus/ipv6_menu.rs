@@ -56,6 +56,13 @@ pub fn ipv6_menu(){
                     println!("IPv6: {}", hex);
                 } else { println!("Invalid decimal input") }
             },
+            "i" => ipv6::cidr_to_prefix(),
+            "j" => ipv6::prefix_to_cidr(),
+            "k" => ipv6::wildcard_mask_calculation(),
+            "l" => ipv6::vlsm_calculation(),
+            "m" => ipv6::subnetting(),
+            "n" => ipv6::supernetting(),
+            "o" => ipv6::dhcp_range_calculation(),
             "q" => break,
             _ => println!("Zgjedhje e pavlefshme!"),
         }
