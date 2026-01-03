@@ -31,22 +31,6 @@ pub fn calculate_ip_range() {
 	} else { println!("Input i pavlefshëm") }
 }
 
-// c: Llogarit Numër Hostesh
-pub fn calculate_number_of_hosts() {
-	let input = read_input("Vendos IPv6 (format xxxx:...:/64): ");
-	if let Some((_ip, prefix)) = ipv6_str_to_u128(&input) {
-		let host_bits = 128 - prefix as u32;
-		if host_bits >= 64 {
-			println!("Numri i hosteve: 2^{} (shumë i madh)", host_bits);
-		} else if host_bits > 0 {
-			let hosts = 1u128 << host_bits;
-			println!("Numri i hosteve: {}", hosts);
-		} else {
-			println!("Numri i hosteve: 1");
-		}
-	} else { println!("Input i pavlefshëm") }
-}
-
 // d: IPv6 Expansion (shkruaj formën e plotë)
 pub fn expand_ipv6() {
 	let input = read_input("Vendos IPv6 në formë të shkurtuar (p.sh. 2001:db8::1/64): ");
@@ -121,15 +105,6 @@ pub fn address_type_identifier() {
 	} else { println!("Input i pavlefshëm") }
 }
 
-// j: Generate Link-Local Address
-pub fn generate_link_local() {
-	let _input = read_input("Shtyp Enter për të gjeneruar një Link-Local address: ");
-	// Generate a link-local address: fe80:0:0:0:0:0:0:1
-	let link_local = 0xfe80000000000000_0000000000000001u128;
-	println!("Link-Local Address: {}/10", u128_to_ipv6_string(link_local));
-}
-
-// k: Generate EUI-64 Address
 pub fn generate_eui64() {
 	let mac = read_input("Vendos MAC address (format: xx:xx:xx:xx:xx:xx): ");
 	let prefix = read_input("Vendos network prefix (p.sh. 2001:db8::/64): ");

@@ -1,301 +1,451 @@
-## 📌 Përmbledhje e shkurtër (ta mbash mend)
+# IP Calculator
 
-👉 IP = kush jam unë
+> DETYRA NR.2
 
-👉 Subnet mask = kush është rrjeti im
+```
+┌─────────────────────────────────────────────────────┐
+│                                                     │
+│                                                     │
+│     ▄▄▄▄▄▄▄  ▄▄▄▄▄▄▄                                │
+│       ▄▄▄▄▄  ▄▄▄▄▄▄▄▄▄                              │
+│         ▄                                           │
+│         ▄    ▄▄▄▄▄                                  │
+│       ▄▄▄▄▄  ▄                                      │
+│                                                     │
+│          I P   C A L C U L A T O R                  │
+│                                                     │
+│        WHEN THE PROF ASKS 'EASY QUESTION'           │
+│             BUT YOUR BRAIN SAYS 404                 │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+```
 
-👉 Gateway = si dal jashtë rrjetit
+## Përmbajtja
 
----
-
-## 🧠 Koncepte kyçe (IPv4 + Subnetting)
-
-**IP address (IPv4)** = një numër 32-bit që identifikon një pajisje në rrjet.
-
-**Subnet mask** tregon cilët bitë janë **NETWORK** dhe cilët bitë janë **HOST**.
-
-Subnet mask është “harta” që i tregon IP-së kufijtë e territorit të saj.
-
-## Network / Broadcast / Host range
-
-- **Network ID** = adresa e rrjetit (nuk i përket asnjë pajisjeje)
-    - `Network = IP AND SubnetMask`
-- **Broadcast** = adresa për t’i dërguar paketë të gjitha host-eve në subnet
-    - `Broadcast = Network OR (NOT SubnetMask)`
-- **Host-et** janë adresat midis:
-    - `First host = Network + 1`
-    - `Last host  = Broadcast - 1`
-- **Hosts** = `2^(host_bits) - 2`
-- **Network** dhe **Broadcast** nuk përdoren për host.
-
-## CIDR Notation (/24, /16, ...)
-
-CIDR tregon sa bitë janë network.
-
-| CIDR | Subnet mask |
-| --- | --- |
-| /8 | 255.0.0.0 |
-| /16 | 255.255.0.0 |
-| /24 | 255.255.255.0 |
-| /30 | 255.255.255.252 |
-
-/n = n bitë 1 nga e majta.
-
-**Subnetting** = ndarja e një rrjeti të madh në rrjete më të vogla.
+- [Rreth Projektit](#rreth-projektit)
+- [Veçoritë](#veçoritë)
+- [Instalimi](#instalimi)
+- [Përdorimi](#përdorimi)
+- [Operacionet IPv4](#operacionet-ipv4)
+- [Operacionet IPv6](#operacionet-ipv6)
+- [Struktura e Projektit](#struktura-e-projektit)
+- [Testimet](#testimet)
+- [Teste Manuale IPv4](#teste-manuale-ipv4)
+- [Teste Manuale IPv6](#teste-manuale-ipv6)
 
 ---
 
-## 🧱 KLASAT IP
+## Rreth Projektit
 
-| Class | First Octet Range | Default Subnet Mask | Network Bits | Host Bits | Network ID | First Host | Last Host | Broadcast | Max Hosts | Përdorimi |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| A | 1 – 126 | 255.0.0.0 (/8) | 8 | 24 | 10.0.0.0 | 10.0.0.1 | 10.255.255.254 | 10.255.255.255 | 16,777,214 | Rrjete shumë të mëdha |
-| B | 128 – 191 | 255.255.0.0 (/16) | 16 | 16 | 172.16.0.0 | 172.16.0.1 | 172.16.255.254 | 172.16.255.255 | 65,534 | Rrjete mesatare, ISP, universitete |
-| C | 192 – 223 | 255.255.255.0 (/24) | 24 | 8 | 192.168.1.0 | 192.168.1.1 | 192.168.1.254 | 192.168.1.255 | 254 | Rrjete të vogla, LAN |
-| D | 224 – 239 | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A | **Multicast** (grup host) |
-| E | 240 – 255 | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A | Rezervuar / Eksperimentale |
-
-## Adresa speciale IPv4
-
-| Adresa | Kuptimi |
-| --- | --- |
-| 127.0.0.1 | Loopback |
-| 0.0.0.0 | Default |
-| 255.255.255.255 | Broadcast global |
+**IP Calculator** është një mjet CLI i ndërtuar në Rust bazuar mbi kërkesat e përmendura në DETYRE NR.2 . 
 
 ---
 
-## 🧾 Llojet e subneteve
+## Veçoritë
 
-| Tip | CIDR |
-| --- | --- |
-| Point-to-Point | /30, /31 |
-| LAN i vogël | /28 |
-| LAN standard | /24 |
-| ISP backbone | /16, /12 |
+### Aftësitë IPv4
+-  Llogaritja e Network ID dhe Broadcast Address
+-  Përcaktimi i DHCP Range
+-  Llogartija e IP range dhe numërimi i host-eve
+-  Llogaritja e Subnet Mask nga kërkesat e host/subnet
+-  Konvertimet Binary ↔ Decimal
+-  Konvertimet CIDR ↔ Subnet Mask
+-  Llogaritja e Wildcard Mask
+-  VLSM (Variable Length Subnet Masking)
+-  Supernetting / Route Aggregation
+-  Identifikimi i klasës IP (A, B, C, D, E)
+-  Detektimi i IP-ve speciale (Private, Loopback, Multicast, etj.)
 
-**Përmbledhje e artë:** Subnet mask ndan bitët → bitët japin network + host → bitwise operacione bëjnë magjinë.
-
----
-
-## 🎯 Wildcard mask / Inverse mask
-
-Shumë përdoret në firewall, routing dhe ACL.
-
-- **Wildcard mask = NOT(subnet mask)**
-- Subnet mask: 255.255.255.0
-- Wildcard: 0.0.0.255
-
-Llogaritja: thjesht inverton bitët e subnet mask.
-
----
-
-## ✅ Check: IP belongs to subnet
-
-Nëse do të kontrollosh nëse një IP i përket një subnet-i të caktuar:
-
-`if (IP & subnet_mask) == network_ID → belongs`
+### Aftësitë IPv6
+-  Llogaritja e Network Prefix
+-  Përcaktimi i IP Range
+-  Llogaritja e numrit të host-eve (2^(128-prefix))
+-  Zgjerimi i adresës IPv6 (forma e plotë)
+-  Kompresimi i adresës IPv6 (forma e shkurtuar)
+-  Konvertimet Hexadecimal ↔ Decimal
+-  Ndarje në Subnete
+-  Identifikimi i tipit të adresës (Multicast, Link-Local, Global Unicast, etj.)
+-  Gjenerimi i adresës Link-Local
+-  Gjenerimi i adresës EUI-64 nga MAC
+-  Subnetting dhe Supernetting
+-  Llogaritja e DHCP Range
 
 ---
 
-## 🧩 Subnetting & VLSM (Variable Length Subnet Mask)
+## Instalimi
 
-Përveç ndarjes klasike, mund të bëhet **VLSM**:
+### Parakushtet
+- **Rust** (1.70+ i rekomanduar)
+- **Cargo** (vjen me Rust)
 
-- Ndahen rrjete me madhësi të ndryshme në të njëjtin IP block.
-- Përdoret kur departamente të ndryshme kanë nevoja të ndryshme.
+Kontrollo instalimin e Rust:
+```bash
+rustc --version
+cargo --version
+```
 
----
+### Instalo Rust
+Nëse nuk e ke Rust të instaluar:
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
 
-## 📡 DHCP pool (range)
+### Klono dhe Ndërto
+```bash
+# Klono repository-n
+git clone https://github.com/jonaldagjoka/IP_Calculator.git
+cd ipcalculator
 
-Përdoret për DHCP pools.
+# Ndërto në modalitetin release
+cargo build --release
 
-- DHCP start IP = first usable host
-- DHCP end IP = last usable host
-
----
-
-## 🔢 Binary / Decimal conversion
-
-Shumë llogaritje përdorin binare për AND/OR.
-
-Shembull:
-
-- 192.168.1.0/24 → 11000000.10101000.00000001.00000000
-
----
-
-## 🧮 Subnet mask shortening / CIDR optimization
-
-Për planifikim rrjeti:
-
-- gjej minimum subnet mask që mbulon një numër host-esh.
-
-Shembull:
-
-- Duam 50 hosts → 2^6 - 2 = 62 hosts → mask = /26
+# Ekzekuto aplikacionin
+cargo run --release
+```
 
 ---
 
-## 🧭 Class / Range check
+## Përdorimi
 
-Identifikon:
+### Fillimi i Shpejtë
+```bash
+# Ekzekuto në modalitetin e zhvillimit
+cargo run
 
-- Class A/B/C
-- Private/Public
-- Special IPs (loopback, multicast, etj.)
+# Ekzekuto me optimizime
+cargo run --release
+
+# Kontrollo kodin pa ndërtuar
+cargo check
+
+# Ekzekuto testet
+cargo test
+```
+
+### Menuja krysrore
+
+
+```
+  ┌────────────────────────────────────────────────────┐
+  │               Menu Kryesore                        │
+  │           (choose your weapon)                     |
+  └────────────────────────────────────────────────────┘
+
+  (a) Llogaritje mbi IPv4
+  (b) Llogaritje mbi IPv6
+  (q) Quit
+```
+### Menuja IPv4
+
+
+```
+┌────────────────────────────────────────────────────┐
+│               IPv4 Calculator                      │
+│        (the classic that still works)              │
+└────────────────────────────────────────────────────┘
+  (*) Kontrollo Klasat dhe IP speciale
+  (a) Network ID
+  (b) Broadcast Address
+  (c) DHCP Range
+  (d) Kontrollo nëse IP i përket një rrjeti
+  (e) Llogarit Subnet Mask nga Numri i Hosteve
+  (f) Llogarit Subnet Mask nga Numri i Subneteve
+  (g) Decimal -> Binary
+  (h) Binary -> Decimal
+  (i) CIDR -> Subnet Mask
+  (j) Subnet Mask -> CIDR
+  (k) Wildcard Mask
+  (l) VLSM
+  (m) Supernetting
+  (q) Kthehu në Menu Kryesore
+  ────────────────────────────────────────────────────
+```
+### Menuja IPv6
+
+
+```
+┌────────────────────────────────────────────────────┐
+│               IPv6 Calculator                      │
+│        (welcome to the future of networking)       │
+└────────────────────────────────────────────────────┘
+ (a) Llogarit Network Prefix (NetID)
+ (b) Llogarit IP Range
+ (c) Llogarit Numër Hostesh (2^(128-prefix))
+ (d) IPv6 Expansion (shkruaj formën e plotë)
+ (e) IPv6 Compression (shkurto adresën)
+ (f) Hex to Decimal Conversion
+ (g) Decimal to Hex Conversion
+ (h) IPv6 Address Type Identifier
+ (i) Generate Link-Local Address
+ (j) Generate EUI-64 Address
+ (k) Subnetting
+ (l) Supernetting
+ (m) DHCP Range Calculation
+ (q) Kthehu në Menu Kryesore
+  ────────────────────────────────────────────────────
+```
+---
+
+## Operacionet IPv4
+
+### Operacionet e Disponueshme
+
+| Operacioni | Përshkrimi | Shembull Input |
+|-----------|-------------|---------------|
+| **Network ID** | Llogarit adresën e rrjetit | `192.168.1.10/24` |
+| **Broadcast** | Gjen adresën broadcast | `10.0.0.0/8` |
+| **DHCP Range** | Përcakton intervalet e host-eve | `172.16.0.0/16` |
+| **Anëtarësia IP** | Kontrollon nëse IP i përket rrjetit | IP + Rrjet |
+| **Subnet nga Host-et** | Llogarit maskën për N host | `100` host |
+| **Subnet nga Subnet-et** | Llogarit maskën për N subnet | `4` subnet |
+| **Decimal ↔ Binary** | Konverton sistemet numerike | `255` ose `11111111` |
+| **CIDR ↔ Mask** | Konverton formatet e notacionit | `/24` ose `255.255.255.0` |
+| **Wildcard Mask** | Llogarit wildcard | `255.255.255.0` |
+| **VLSM** | Subnetting me gjatësi variabile | Kërkesa të shumta |
+| **Supernetting** | Agreguesi i rrjeteve | Rrjete të shumta |
+
 
 ---
 
-## ➕ IP arithmetic / Host arithmetic
+## Operacionet IPv6
 
-- IP + x host → gjen IP e caktuar brenda subnet
-- IP - x host → gjen host tjetër
+### Operacionet e Disponueshme
 
-Përdoret në DHCP, NAT dhe routing.
+| Operacioni | Përshkrimi | Shembull Input |
+|-----------|-------------|---------------|
+| **Network Prefix** | Llogarit network prefix | `2001:db8::1/64` |
+| **IP Range** | Adresa e parë dhe e fundit | `fe80::/10` |
+| **Numri i Host-eve** | Llogarit 2^(128-prefix) | `2001:db8::/48` |
+| **Zgjerimi** | Forma e plotë e adresës | `2001:db8::1` |
+| **Kompresimi** | Forma e shkurtuar | `2001:0db8:0000:0000::0001` |
+| **Hex ↔ Decimal** | Konverton segmentet | `2001` ose `8193` |
+| **Tipi i Adresës** | Identifikon tipin | Çdo IPv6 |
+| **Gjenerimi EUI-64** | Gjenero nga MAC | MAC + prefix |
+| **Subnetting** | Krijo subnete | Rrjet + numër |
+| **Supernetting** | Agreguesi i rrugëve | Dy rrjete |
 
----
-
-## 🧩 Supernetting / summarization
-
-Marrim disa rrjete dhe i bashkojmë në një rrjet më të madh për të reduktuar tabelat e routing:
-
-- 192.168.0.0/24 + 192.168.1.0/24 → 192.168.0.0/23
-
----
-
-## 🧷 VLAN IP allocation
-
-Secila VLAN ka rrjet të veçantë.
-
-Përdoret bitwise subnetting + host counting.
 
 ---
 
-## 📣 Broadcast vs Multicast
+## Struktura e Projektit
 
-- Broadcast = çdo host në rrjet merr paketë
-- Multicast = vetëm host-et e abonuar marrin paketë
-
----
-
-## 🌍 IPv6 (opsionale, më komplekse)
-
-IPv6 = 128-bit, por konceptet janë të ngjashme:
-
-- Network prefix
-- Host ID
-- Subnetting
-- Number of hosts
-
-## Llojet e IPv6
-
-| Tip | Shembull |
-| --- | --- |
-| Unicast | 2001:db8::1 (një host) |
-| Multicast | ff00::/8 (për shumë host) |
-| Anycast | 2001:db8::1 (rruga më e afërt) |
-| Link-local | fe80::/10 (brenda segmentit lokal) |
-| Unique local | fc00::/7 (private) |
-
-## Prefix / Subnet
-
-IPv6 përdor prefix notation si IPv4: /64, /48, /56.
-
-Shembull /64 → 64-bit network + 64-bit host.
-
-Nr. hosts = 2^(host_bits)
-
-Për /64 → 2^64 host.
-
-IPv6 zakonisht përdor /64 për LAN dhe nuk ka broadcast (përdor multicast).
+```
+ipcalculator/
+├── Cargo.toml              # Konfigurimi i projektit
+├── Cargo.lock              # Skedari i varësive
+├── README.md               # Ky skedar
+├── src/
+│   ├── main.rs             # Entry point i aplikacionit
+│   ├── lib.rs              # Rrënja e librarisë
+│   ├── menus/              # Modulet e menysë CLI
+│   │   ├── mod.rs
+│   │   ├── main_menu.rs    # Trajtimi i menysë kryesore
+│   │   ├── ipv4_menu.rs    # Menya e operacioneve IPv4
+│   │   └── ipv6_menu.rs    # Menya e operacioneve IPv6
+│   ├── models/             # Strukturat e të dhënave
+│   │   ├── mod.rs
+│   │   ├── ipv4_address.rs # Modeli i adresës IPv4
+│   │   └── ipv6_address.rs # Modeli i adresës IPv6
+│   └── utils/              # Funksionet ndihmëse
+│       ├── mod.rs
+│       ├── conversions.rs  # Konvertimet e formateve
+│       ├── ipv4.rs         # Llogaritjet IPv4
+│       ├── ipv6.rs         # Llogaritjet IPv6
+│       └── ip_classes.rs   # Klasifikimi i IP-ve
+└── tests/                  # Testet e integrimit
+    ├── ipv4_tests.rs
+    └── ipv6_tests.rs
+```
 
 ---
 
-## 🛣️ Routing & optimizim
+## Testimet
 
-- **Longest Prefix Match (LPM)** → router-i zgjedh rrjetin më të saktë për një IP.
-- **CIDR aggregation** → kombinon rrjete në një rrjet më të madh për të ulur entries në routing table.
-- **Subnet efficiency / wastage** → llogarit sa adresa mbeten “bosh” për të optimizuar përdorimin.
+### Ekzekuto Të Gjitha Testet
+```bash
+cargo test
+```
 
----
+### Ekzekuto Test Suite Specifik
+```bash
+# Vetëm testet IPv4
+cargo test ipv4
 
-## 🧾 Private, Public dhe Special (IPv4)
+# Vetëm testet IPv6
+cargo test ipv6
 
-## 1️⃣ IP Private (RFC 1918)
+# Output me detaje
+cargo test -- --nocapture
+```
 
-| Range | Për çfarë përdoret |
-| --- | --- |
-| 10.0.0.0 – 10.255.255.255 | Rrjete shumë të mëdha (enterprise, cloud) |
-| 172.16.0.0 – 172.31.255.255 | Rrjete mesatare |
-| 192.168.0.0 – 192.168.255.255 | LAN shtëpi / zyra |
-
-🚫 Nuk routohen në Internet
-
-✅ Përdoren me NAT
-
-## 2️⃣ Loopback
-
-| IP | Kuptimi |
-| --- | --- |
-| 127.0.0.1 | Vetë kompjuteri |
-| 127.0.0.0/8 | I gjithë loopback range |
-
-## 3️⃣ Link-local (APIPA)
-
-| Range | Kur përdoret |
-| --- | --- |
-| 169.254.0.0 – 169.254.255.255 | Kur DHCP dështon |
-
-📌 Kompjuterët flasin vetëm mes tyre, pa Internet
-
-## 4️⃣ Broadcast
-
-| IP | Kuptimi |
-| --- | --- |
-| 255.255.255.255 | Broadcast global |
-| x.x.x.255 | Broadcast i subnet-it |
-
-## 5️⃣ Network ID
-
-| Shembull | Pse |
-| --- | --- |
-| 192.168.1.0/24 | Host bits = 0 |
-
-🚫 Nuk caktohet host-it
-
-## 6️⃣ Multicast (Class D)
-
-| Range | Përdorimi |
-| --- | --- |
-| 224.0.0.0 – 239.255.255.255 | Streaming, routing protocols |
-
-## 7️⃣ Reserved / Experimental
-
-| Range | Status |
-| --- | --- |
-| 240.0.0.0 – 255.255.255.254 | Eksperimentale |
-| 255.255.255.255 | Broadcast |
-
-## 8️⃣ Documentation / TEST
-
-| Range | Pse |
-| --- | --- |
-| 192.0.2.0/24 | Dokumentacion |
-| 198.51.100.0/24 | Shembuj |
-| 203.0.113.0/24 | Tutoriale |
+### Mbulimi i Testeve
+Suite-i i testeve përfshin:
+-  Parsing dhe validim të adresave
+-  Llogaritje të rrjetit dhe broadcast
+-  Algoritme të numërimit të host-eve
+-  Derivim të subnet mask
+-  Konvertime të notacionit CIDR
+-  Llogaritje VLSM
+-  Logjikë supernetting
+-  Zgjerim/kompresim IPv6
+-  Klasifikim të tipit të adresës
 
 ---
 
-## 📌 PËRMBLEDHJE QË TA MBAJSH MEND
+## Teste Manuale IPv4
+```bash
+### Kontrollo Klasat dhe IP speciale
+Vendos nje adrese IPv4 (x.x.x.x): 192.168.2.1
 
-👉 Private = LAN
+╔═══════════════════════════════════════════════════════════╗    
+║       Classification for 192.168.2.1                      ║       
+╚═══════════════════════════════════════════════════════════╝    
 
-👉 Public = Internet
+ Class: C
+ Default Subnet Mask: 255.255.255.0 (/24)
+ Type: Private (RFC 1918)
+ Usage: Internal networks (not routable on Internet)
 
-👉 Subnet mask = kufiri i rrjetit
 
-👉 Network & Broadcast nuk janë host
+### Network ID
+Vendos IPv4 (format x.x.x.x/24): 192.168.2.1/24
+Network: 192.168.2.0/24
 
-👉 192.168 është private sepse STANDARDI e thotë
+### Broadcast Address
+Vendos IPv4 (format x.x.x.x/24): 192.168.2.1/24
+Broadcast: 192.168.2.255
+
+### DHCP Range
+Vendos rrjetin (x.x.x.x/24): 192.168.2.1/24
+DHCP Pool:
+  Hosti i pare: 192.168.2.1
+  Hosti i fundit: 192.168.2.254
+  Hoste Totale: 254
+
+### Kontrollo nëse IP i përket një rrjeti
+Vendos rrjetin (x.x.x.x/24): 192.168.2.1/24
+Vendos IP-në për kontroll (x.x.x.x): 192.168.2.56/24
+✓ IP 192.168.2.56 i perket rrjetit 192.168.2.0/24
+
+### Llogarit Subnet Mask nga Numri i Hosteve
+Vendos numrin e hosteve: 500
+Prefix: /23  Mask: 255.255.254.0
+
+### Llogarit Subnet Mask nga Numri i Subneteve
+Vendos rrjetin kryesor (format x.x.x.x/24): 192.168.2.56/24
+Vendos numrin e subnetave të kërkuara: 120
+New prefix: /31  Mask: 255.255.255.254
+
+### Decimal->Binary
+Vendos IPv4 (x.x.x.x or x.x.x.x/xx): 192.168.2.56/24
+Binary: 11000000.10101000.00000010.00111000
+
+### Binay->Decimal
+Vendos IPv4 në binar (aaaaaaaa.bbbbbbbb.cccccccc.dddddddd): 11000000.10101000.00000010.00111000
+Decimal IPv4: 192.168.2.56
+
+### CIDR -> Subnet Mask
+Vendos prefiksin CIDR (0-32): 25
+Subnet Mask: 255.255.255.128
+
+### Subnet Mask -> CIDR
+Vendos subnet mask (x.x.x.x): 255.255.255.240
+CIDR: /28
+
+### Wildcard Mask
+Vendos CIDR (x.x.x.x/24) ose Subnet Mask (x.x.x.x): 255.255.255.240
+Wildcard Mask: 0.0.0.15
+
+### VLSM
+VLSM: Variable Length Subnet Mask
+Vendos rrjetin kryesor (x.x.x.x/24): 192.168.2.56/24
+Vendos numrin e subneteve të kërkuara: 7              
+Subnet 1: 192.168.2.0/27
+Subnet 2: 192.168.2.32/27
+Subnet 3: 192.168.2.64/27
+Subnet 4: 192.168.2.96/27
+Subnet 5: 192.168.2.128/27
+Subnet 6: 192.168.2.160/27
+Subnet 7: 192.168.2.192/27
+
+### Supernetting
+Supernetting: krijimi i një rrjeti më të madh nga dy rrjete ekzistuese
+Vendos rrjetin e parë (x.x.x.x/24): 192.168.2.0/24 
+Vendos rrjetin e dytë (x.x.x.x/24): 192.168.4.0/24
+Supernet: 192.128.0.0/10
+```
+## Teste Manuale IPv6
+```bash
+### Llogarit Network Prefix (NetID)
+Vendos IPv6 (format xxxx:...:/64): 2001:db8::10/64
+Network Prefix: 2001:db8::/64
+
+### Llogarit IP Range
+Vendos IPv6 (format xxxx:...:/64): 2001:db8::10/64
+First Address: 2001:db8::
+Last Address: 2001:db8::ffff:ffff:ffff:ffff
+
+### IPv6 Expansion (shkruaj formën e plotë)
+Vendos IPv6 në formë të shkurtuar (p.sh. 2001:db8::1/64): 2001:db8::10/64
+Forma e plotë: 2001:0db8:0000:0000:0000:0000:0000:0010/64
+
+### IPv6 Compression (shkurto adresën)
+Vendos IPv6 në formë të plotë (p.sh. 2001:0db8:0000:0000:0000:0000:0000:0001): 2001:0db8:0000:0000:0000:0000:0000:0010   
+Forma e shkurtuar: 2001:db8::10/128
+
+### Hex to Decimal Conversion
+Vendos një segment IPv6 në hex (p.sh. 2001): abc
+Decimal: 2748
+
+### Decimal to Hex Conversion
+Vendos një vlerë decimal (0-65535): 20
+Hexadecimal: 14
+
+### IPv6 Address Type Identifier
+Vendos IPv6 address: 2001:db8::10/64
+Address Type: Global Unicast
+
+### Generate EUI-64 Address
+Vendos MAC address (format: xx:xx:xx:xx:xx:xx): 00:1a:2b:3c:4d:5e
+Vendos network prefix (p.sh. 2001:db8::/64): 2001:db8::/64
+EUI-64 Address: 2001:db8::21a:2bff:fe3c:4d5e/64
+
+### Subnetting
+Vendos rrjetin (xxxx:...:/64): 2001:db8::/64
+Vendos numrin e subneteve: 4 
+Subnete (/66):
+  2001:db8::/66
+  2001:db8:0:0:4000::/66
+  2001:db8:0:0:8000::/66
+  2001:db8:0:0:c000::/66
+
+### Supernetting
+Vendos rrjetin e parë (xxxx:...:/64): 2001:db8:1000::/64
+Vendos rrjetin e dytë (xxxx:...:/64): 2001:db8:2000::/64
+Supernet: 2001:db8:1000::/93
+
+### DHCP Range Calculation
+Vendos rrjetin (xxxx:...:/64): 2001:db8:2000::/64
+IPv6 Prefix Range:
+  First: 2001:db8:2000::
+  Last: 2001:db8:2000:0:ffff:ffff:ffff:ffff
+  Total addresses: 2^64
+```
+
+---
+
+## Autori
+
+**Jonalda Gjoka**
+
+---
+
+## Referenca
+
+- RFC 1918 - Address Allocation for Private Internets
+- RFC 4291 - IPv6 Addressing Architecture
+- RFC 3513 - IPv6 Addressing Architecture (zëvendësuar nga 4291)
+
+---
+
+**Ndërtuar me Rust 🦀**
