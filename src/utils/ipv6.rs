@@ -9,170 +9,202 @@ fn read_input(prompt: &str) -> String {
 	s.trim().to_string()
 }
 
+// a: Llogarit Network Prefix (NetID)
 pub fn calculate_netid() {
-	let input = read_input("Enter IPv6 (format xxxx:...:/64): ");
+	let input = read_input("Vendos IPv6 (format xxxx:...:/64): ");
 	if let Some((ip, prefix)) = ipv6_str_to_u128(&input) {
 		let mask = mask_from_prefix_v6(prefix);
 		let network = ip & mask;
-		println!("Network: {}/{}", u128_to_ipv6_string(network), prefix);
-	} else { println!("Invalid IPv6 input") }
+		println!("Network Prefix: {}/{}", u128_to_ipv6_string(network), prefix);
+	} else { println!("Input i pavlefshëm") }
 }
 
-pub fn calculate_broadcast_address() {
-	println!("IPv6 has no broadcast address; computing last address in prefix instead.");
-	let input = read_input("Enter IPv6 (format xxxx:...:/64): ");
-	if let Some((ip, prefix)) = ipv6_str_to_u128(&input) {
-		let mask = mask_from_prefix_v6(prefix);
-		let network = ip & mask;
-		let last = network | (!mask);
-		println!("Last address in prefix: {}", u128_to_ipv6_string(last));
-	} else { println!("Invalid IPv6 input") }
-}
-
+// b: Llogarit IP Range
 pub fn calculate_ip_range() {
-	let input = read_input("Enter IPv6 (format xxxx:...:/64): ");
+	let input = read_input("Vendos IPv6 (format xxxx:...:/64): ");
 	if let Some((ip, prefix)) = ipv6_str_to_u128(&input) {
 		let mask = mask_from_prefix_v6(prefix);
 		let network = ip & mask;
 		let last = network | (!mask);
-		println!("First: {}", u128_to_ipv6_string(network));
-		println!("Last: {}", u128_to_ipv6_string(last));
-	} else { println!("Invalid IPv6 input") }
+		println!("First Address: {}", u128_to_ipv6_string(network));
+		println!("Last Address: {}", u128_to_ipv6_string(last));
+	} else { println!("Input i pavlefshëm") }
 }
 
+// c: Llogarit Numër Hostesh
 pub fn calculate_number_of_hosts() {
-	let input = read_input("Enter IPv6 (format xxxx:...:/64): ");
+	let input = read_input("Vendos IPv6 (format xxxx:...:/64): ");
 	if let Some((_ip, prefix)) = ipv6_str_to_u128(&input) {
 		let host_bits = 128 - prefix as u32;
 		if host_bits >= 64 {
-			println!("Hosts: 2^{} (very large)", host_bits);
+			println!("Numri i hosteve: 2^{} (shumë i madh)", host_bits);
+		} else if host_bits > 0 {
+			let hosts = 1u128 << host_bits;
+			println!("Numri i hosteve: {}", hosts);
 		} else {
-			let hosts = (1u128 << host_bits) - 1u128; // don't subtract 2 in IPv6
-			println!("Hosts (approx): {}", hosts);
+			println!("Numri i hosteve: 1");
 		}
-	} else { println!("Invalid IPv6 input") }
+	} else { println!("Input i pavlefshëm") }
 }
 
-pub fn calculate_subnet_mask_from_hosts() {
-	let input = read_input("Enter required number of hosts: ");
-	if let Ok(req_hosts) = input.parse::<u128>() {
-		if req_hosts == 0 {
-			println!("At least 1 host required");
+// d: IPv6 Expansion (shkruaj formën e plotë)
+pub fn expand_ipv6() {
+	let input = read_input("Vendos IPv6 në formë të shkurtuar (p.sh. 2001:db8::1/64): ");
+	
+	if let Some((ip, prefix)) = ipv6_str_to_u128(&input) {
+		// Convert to full expanded form manually
+		let expanded = format!(
+			"{:04x}:{:04x}:{:04x}:{:04x}:{:04x}:{:04x}:{:04x}:{:04x}",
+			(ip >> 112) & 0xffff,
+			(ip >> 96) & 0xffff,
+			(ip >> 80) & 0xffff,
+			(ip >> 64) & 0xffff,
+			(ip >> 48) & 0xffff,
+			(ip >> 32) & 0xffff,
+			(ip >> 16) & 0xffff,
+			ip & 0xffff
+		);
+		println!("Forma e plotë: {}/{}", expanded, prefix);
+	} else { 
+		println!("Input i pavlefshëm") 
+	}
+}
+
+
+// e: IPv6 Compression (shkurto adresën)
+pub fn compress_ipv6() {
+	let input = read_input("Vendos IPv6 në formë të plotë (p.sh. 2001:0db8:0000:0000:0000:0000:0000:0001): ");
+	if let Some((ip, prefix)) = ipv6_str_to_u128(&input) {
+		let compressed = u128_to_ipv6_string(ip);
+		println!("Forma e shkurtuar: {}/{}", compressed, prefix);
+	} else { println!("Input i pavlefshëm") }
+}
+
+// f: Hex to Decimal Conversion
+pub fn hex_to_decimal() {
+	let input = read_input("Vendos një segment IPv6 në hex (p.sh. 2001): ");
+	if let Ok(hex_val) = u16::from_str_radix(&input, 16) {
+		println!("Decimal: {}", hex_val);
+	} else {
+		println!("Input i pavlefshëm - duhet të jetë hexadecimal");
+	}
+}
+
+// g: Decimal to Hex Conversion
+pub fn decimal_to_hex() {
+	let input = read_input("Vendos një vlerë decimal (0-65535): ");
+	if let Ok(dec_val) = input.parse::<u16>() {
+		println!("Hexadecimal: {:x}", dec_val);
+	} else {
+		println!("Input i pavlefshëm - duhet të jetë numër decimal");
+	}
+}
+
+// i: IPv6 Address Type Identifier
+pub fn address_type_identifier() {
+	let input = read_input("Vendos IPv6 address: ");
+	if let Some((ip, _prefix)) = ipv6_str_to_u128(&input) {
+		let addr_type = if (ip >> 120) as u8 == 0xff {
+			"Multicast"
+		} else if ((ip >> 118) & 0x3ff) == 0x3fa {
+			"Link-Local"
+		} else if (ip >> 120) as u8 & 0xfe == 0xfc {
+			"Unique Local (Private)"
+		} else if ip == 0 {
+			"Unspecified"
+		} else if ip == 1 {
+			"Loopback"
+		} else {
+			"Global Unicast"
+		};
+		println!("Address Type: {}", addr_type);
+	} else { println!("Input i pavlefshëm") }
+}
+
+// j: Generate Link-Local Address
+pub fn generate_link_local() {
+	let _input = read_input("Shtyp Enter për të gjeneruar një Link-Local address: ");
+	// Generate a link-local address: fe80:0:0:0:0:0:0:1
+	let link_local = 0xfe80000000000000_0000000000000001u128;
+	println!("Link-Local Address: {}/10", u128_to_ipv6_string(link_local));
+}
+
+// k: Generate EUI-64 Address
+pub fn generate_eui64() {
+	let mac = read_input("Vendos MAC address (format: xx:xx:xx:xx:xx:xx): ");
+	let prefix = read_input("Vendos network prefix (p.sh. 2001:db8::/64): ");
+	
+	// Parse MAC address
+	let mac_parts: Vec<&str> = mac.split(':').collect();
+	if mac_parts.len() != 6 {
+		println!("MAC address i pavlefshëm");
+		return;
+	}
+	
+	let mut mac_bytes = [0u8; 6];
+	for (i, part) in mac_parts.iter().enumerate() {
+		if let Ok(byte) = u8::from_str_radix(part, 16) {
+			mac_bytes[i] = byte;
+		} else {
+			println!("MAC address i pavlefshëm");
 			return;
 		}
-		let mut bits = 1u32;
-		loop {
-			if bits >= 128 {
-				println!("Too many hosts");
-				return;
-			}
-			let available = 1u128 << bits;
-			if available >= req_hosts {
-				break;
-			}
-			bits += 1;
-		}
-		let prefix = 128u32 - bits;
-		println!("Prefix: /{}", prefix);
-	} else { println!("Invalid number") }
+	}
+	
+	// Flip the 7th bit (universal/local bit)
+	mac_bytes[0] ^= 0x02;
+	
+	// Build EUI-64: MAC[0:3] + FF:FE + MAC[3:6]
+	let interface_id = ((mac_bytes[0] as u64) << 56)
+		| ((mac_bytes[1] as u64) << 48)
+		| ((mac_bytes[2] as u64) << 40)
+		| (0xff << 32)
+		| (0xfe << 24)
+		| ((mac_bytes[3] as u64) << 16)
+		| ((mac_bytes[4] as u64) << 8)
+		| (mac_bytes[5] as u64);
+	
+	// Parse network prefix
+	if let Some((network_ip, net_prefix)) = ipv6_str_to_u128(&prefix) {
+		let mask = mask_from_prefix_v6(net_prefix);
+		let network = network_ip & mask;
+		let full_address = network | (interface_id as u128);
+		
+		println!("EUI-64 Address: {}/{}", u128_to_ipv6_string(full_address), net_prefix);
+	} else {
+		println!("Network prefix i pavlefshëm");
+	}
 }
 
-pub fn calculate_subnet_mask_from_subnets() {
-	let parent = read_input("Enter parent network (format xxxx:...:/64): ");
-	let subnets = read_input("Enter required number of subnets: ");
-	if let Some((_ip, parent_prefix)) = ipv6_str_to_u128(&parent) {
-		if let Ok(subs) = subnets.parse::<u32>() {
-			let mut bits = 0u8;
-			while (1u128 << bits) < subs as u128 { bits += 1; }
-			let new_prefix = parent_prefix + bits;
-			if new_prefix > 128 { println!("Cannot create that many subnets") }
-			else { println!("New prefix: /{}", new_prefix); }
-		} else { println!("Invalid subnets number") }
-	} else { println!("Invalid parent network") }
-}
-
-// i: CIDR to Prefix Conversion
-pub fn cidr_to_prefix() {
-	let cidr = read_input("Enter CIDR prefix (0-128): ");
-	if let Ok(prefix) = cidr.parse::<u8>() {
-		if prefix > 128 { println!("CIDR must be 0-128"); return; }
-		println!("Prefix: /{}", prefix);
-	} else { println!("Invalid CIDR") }
-}
-
-// j: Prefix to CIDR (same as above for IPv6)
-pub fn prefix_to_cidr() {
-	let input = read_input("Enter prefix length (0-128): ");
-	if let Ok(prefix) = input.parse::<u8>() {
-		if prefix > 128 { println!("Prefix must be 0-128"); return; }
-		println!("CIDR: /{}", prefix);
-	} else { println!("Invalid prefix") }
-}
-
-// k: Wildcard Mask Calculation
-pub fn wildcard_mask_calculation() {
-	let input = read_input("Enter IPv6 prefix (xxxx:...:/64): ");
-	if let Some((_ip, prefix)) = ipv6_str_to_u128(&input) {
-		let mask = mask_from_prefix_v6(prefix);
-		let wildcard = !mask;
-		println!("Wildcard (inverted mask): {}", u128_to_ipv6_string(wildcard));
-	} else { println!("Invalid input") }
-}
-
-// l: VLSM Calculation
-pub fn vlsm_calculation() {
-	println!("VLSM: Variable Length Subnet Mask");
-	let parent = read_input("Enter parent network (xxxx:...:/64): ");
-	let num_subnets = read_input("Enter number of subnets needed: ");
-	if let Some((ip, parent_prefix)) = ipv6_str_to_u128(&parent) {
-		if let Ok(subs) = num_subnets.parse::<u32>() {
-			let mut bits_needed = 0u8;
-			while (1u128 << bits_needed) < subs as u128 { bits_needed += 1; }
-			let new_prefix = parent_prefix + bits_needed;
-			if new_prefix > 128 { println!("Cannot subdivide further"); return; }
-			let mask = mask_from_prefix_v6(parent_prefix);
-			let network = ip & mask;
-			let subnet_size = 1u128 << (128 - new_prefix as u32);
-			for i in 0..subs.min(16) {
-				let subnet_ip = network + (subnet_size * i as u128);
-				println!("Subnet {}: {}/{}", i + 1, u128_to_ipv6_string(subnet_ip), new_prefix);
-			}
-			if subs > 16 { println!("... and {} more", subs - 16); }
-		} else { println!("Invalid number") }
-	} else { println!("Invalid parent network") }
-}
-
-// m: Subnetting
+// l: Subnetting
 pub fn subnetting() {
-	println!("Subnetting: divide network into smaller subnets");
-	let network = read_input("Enter network (xxxx:...:/64): ");
-	let num_subnets = read_input("Enter number of subnets: ");
+	let network = read_input("Vendos rrjetin (xxxx:...:/64): ");
+	let num_subnets = read_input("Vendos numrin e subneteve: ");
 	if let Some((ip, prefix)) = ipv6_str_to_u128(&network) {
 		if let Ok(subs) = num_subnets.parse::<u32>() {
 			let mut bits = 0u8;
 			while (1u128 << bits) < subs as u128 { bits += 1; }
 			let new_prefix = prefix + bits;
-			if new_prefix > 128 { println!("Cannot subnet further"); return; }
+			if new_prefix > 128 { println!("Nuk mund të nënndahet më tej"); return; }
 			let mask = mask_from_prefix_v6(prefix);
 			let net = ip & mask;
-			let subnet_size = 1u128 << (128 - new_prefix as u32);
-			println!("Subnets (/{}):", new_prefix);
+			let subnet_size = if new_prefix < 128 { 1u128 << (128 - new_prefix as u32) } else { 1 };
+			println!("Subnete (/{}):", new_prefix);
 			for i in 0..subs.min(10) {
 				let subnet_ip = net + (subnet_size * i as u128);
 				println!("  {}/{}", u128_to_ipv6_string(subnet_ip), new_prefix);
 			}
-			if subs > 10 { println!("  ... and {} more", subs - 10); }
-		} else { println!("Invalid number") }
-	} else { println!("Invalid network") }
+			if subs > 10 { println!("  ... dhe {} të tjera", subs - 10); }
+		} else { println!("Input i pavlefshëm") }
+	} else { println!("Input i pavlefshëm") }
 }
 
-// n: Supernetting
+// m: Supernetting
 pub fn supernetting() {
-	println!("Supernetting: combine networks into larger supernet");
-	let net1 = read_input("Enter first network (xxxx:...:/64): ");
-	let net2 = read_input("Enter second network (xxxx:...:/64): ");
+	let net1 = read_input("Vendos rrjetin e parë (xxxx:...:/64): ");
+	let net2 = read_input("Vendos rrjetin e dytë (xxxx:...:/64): ");
 	if let (Some((ip1, p1)), Some((ip2, p2))) = (ipv6_str_to_u128(&net1), ipv6_str_to_u128(&net2)) {
-		if p1 != p2 { println!("Networks must have same prefix"); return; }
+		if p1 != p2 { println!("Rjetat duhet të kenë të njëjtin prefiks"); return; }
 		let xor = ip1 ^ ip2;
 		let mut bits = 0u32;
 		for i in (0..128).rev() {
@@ -185,12 +217,12 @@ pub fn supernetting() {
 		let mask = mask_from_prefix_v6(supernet_prefix as u8);
 		let supernet = ip1 & mask;
 		println!("Supernet: {}/{}", u128_to_ipv6_string(supernet), supernet_prefix);
-	} else { println!("Invalid networks") }
+	} else { println!("Input i pavlefshëm") }
 }
 
-// o: DHCP Range Calculation
+// n: DHCP Range Calculation
 pub fn dhcp_range_calculation() {
-	let network = read_input("Enter network (xxxx:...:/64): ");
+	let network = read_input("Vendos rrjetin (xxxx:...:/64): ");
 	if let Some((ip, prefix)) = ipv6_str_to_u128(&network) {
 		let mask = mask_from_prefix_v6(prefix);
 		let net = ip & mask;
@@ -200,10 +232,9 @@ pub fn dhcp_range_calculation() {
 		println!("  First: {}", u128_to_ipv6_string(net));
 		println!("  Last: {}", u128_to_ipv6_string(broadcast));
 		if host_bits < 128 {
-			let _total = 1u128 << host_bits;
 			println!("  Total addresses: 2^{}", host_bits);
 		} else {
 			println!("  Total addresses: 2^128 (extremely large)");
 		}
-	} else { println!("Invalid network") }
+	} else { println!("Input i pavlefshëm") }
 }

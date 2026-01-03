@@ -1,10 +1,10 @@
 use std::io::{self, Write};
 
 pub fn check_ip_classes() {
-    println!("\n=== IP Address Classifier ===\n");
-
-    println!("\n--- Check Your IP Address ---");
-    print!("Enter an IPv4 address (x.x.x.x): ");
+ println!("  ┌────────────────────────────────────────────────────┐");
+ println!("  │               IPv4 Address Classifier              │");
+ println!("  └────────────────────────────────────────────────────┘\n");
+    print!("Vendos nje adrese IPv4 (x.x.x.x): ");
     io::stdout().flush().ok();
     let mut input = String::new();
     io::stdin().read_line(&mut input).ok();
@@ -12,7 +12,7 @@ pub fn check_ip_classes() {
     
     let octets: Vec<&str> = input.split('.').collect();
     if octets.len() != 4 {
-        println!("Invalid IPv4 address format");
+        println!("IPv4 ne format te pavlefshëm");
         return;
     }
     
@@ -24,7 +24,7 @@ pub fn check_ip_classes() {
     if let Ok(octs) = parsed_octets {
         classify_ip(octs[0], octs[1], octs[2], octs[3]);
     } else {
-        println!("Invalid IP address - octets must be 0-255");
+        println!("IP adrese e pavlefshme - oktetet duhet te jene 0-255");
     }
 }
 

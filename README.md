@@ -1,28 +1,3 @@
-## 🧮  Terms
-
-- Network ID
-- Broadcast
-- Host Range (first/last)
-- Number of hosts
-- CIDR → Subnet mask
-- Wildcard mask
-- IP belong check
-- Next/previous network
-- Supernet / IP summarization
-- VLSM / Supernetting (Variable Length Subnet Mask)
-- Binary/Decimal conversion
-- IP arithmetic
-- DHCP pool calculation
-- Host arithmetic
-- Maximum number of hosts
-- Longest Prefix Match (LPM) & routing optimization
-- CIDR aggregation
-- Subnet efficiency / wastage
-- IPv6
-- Class / Range check
-
----
-
 ## 📌 Përmbledhje e shkurtër (ta mbash mend)
 
 👉 IP = kush jam unë
