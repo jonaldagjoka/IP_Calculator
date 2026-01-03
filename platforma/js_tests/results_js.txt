@@ -1,0 +1,10 @@
+Stderr: PASS ./IPCalc.test.js
+  √ Subnet 192.168.1.10/255.255.255.0 (5 ms)
+  √ Subnet 10.0.0.1/255.255.255.0 (1 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       2 passed, 2 total
+Snapshots:   0 total
+Time:        0.792 s, estimated 1 s
+Ran all test suites.
+
