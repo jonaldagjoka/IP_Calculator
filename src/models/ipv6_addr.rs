@@ -69,17 +69,22 @@ impl IPv6Address {
 
     /// Get the address type (unicast, multicast, link-local, loopback, etc.)
     pub fn address_type(&self) -> &'static str {
-        match (self.ip >> 120) & 0xf {
-            0 => "Unspecified/Loopback",
-            1 => "Unspecified",
-            2..=3 => "Documentation",
-            0xf => {
-                if (self.ip >> 112) == 0xfe80 { "Link-Local" }
-                else if (self.ip >> 112) == 0xfc00 { "Unique Local" }
-                else { "Multicast" }
-            },
-            _ => "Global Unicast",
-        }
+        // Precise checks for common IPv6 address types
+        if self.ip == 0 { return "Unspecified"; }
+        if self.ip == 1 { return "Loopback"; }
+
+        // Multicast: ff00::/8
+        if (self.ip >> 120) as u8 == 0xff { return "Multicast"; }
+
+        // Link-local: fe80::/10 -> top 10 bits 0b1111111010 (0x3fa)
+        if ((self.ip >> 118) & 0x3ff) == 0x3fa { return "Link-Local"; }
+
+        // Unique local: fc00::/7 (fc00 or fd00)
+        let first_byte = (self.ip >> 120) as u8;
+        if first_byte & 0xfe == 0xfc { return "Unique Local"; }
+
+        // Default to global unicast
+        "Global Unicast"
     }
 
     /// Check if the address is multicast
@@ -89,13 +94,15 @@ impl IPv6Address {
 
     /// Check if the address is link-local
     pub fn is_link_local(&self) -> bool {
-        let first_10_bits = (self.ip >> 118) & 0x3ff; // Get top 10 bits
-        first_10_bits == 0x2a0 // 0xfe80 >> 6 = 0x3fa, but checking /10 properly
+        // fe80::/10 -> top 10 bits equal 0x3fa
+        ((self.ip >> 118) & 0x3ff) == 0x3fa
     }
 
     /// Check if the address is private/unique local
     pub fn is_private(&self) -> bool {
-        (self.ip >> 112) == 0xfc00 || (self.ip >> 112) == 0xfd00
+        // Unique local addresses: fc00::/7 (fc00 or fd00)
+        let first_byte = (self.ip >> 120) as u8;
+        (first_byte & 0xfe) == 0xfc
     }
 }
 

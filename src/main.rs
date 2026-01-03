@@ -1,6 +1,4 @@
-mod utils;
-mod models;
-mod menus;
+use ipcalculator::menus;
 
 fn main(){
     println!("================================");

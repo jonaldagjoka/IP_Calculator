@@ -22,7 +22,7 @@ pub fn main_menu() {
             "b" => ipv4_menu::ipv4_menu(),
             "c" => ipv6_menu::ipv6_menu(),
             "d" => {
-                println!("Faleminderit që përdorët tool-in!");
+                println!("Krjuar nga Jonalda Gjoka!");
                 break;
             },
             _ => println!("Zgjedhje e pavlefshme!"),

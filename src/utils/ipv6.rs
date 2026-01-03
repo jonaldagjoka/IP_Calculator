@@ -200,7 +200,7 @@ pub fn dhcp_range_calculation() {
 		println!("  First: {}", u128_to_ipv6_string(net));
 		println!("  Last: {}", u128_to_ipv6_string(broadcast));
 		if host_bits < 128 {
-			let total = 1u128 << host_bits;
+			let _total = 1u128 << host_bits;
 			println!("  Total addresses: 2^{}", host_bits);
 		} else {
 			println!("  Total addresses: 2^128 (extremely large)");

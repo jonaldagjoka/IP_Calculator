@@ -1,6 +1,14 @@
 [package]
 name = "ipcalculator"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
+
+[lib]
+name = "ipcalculator"
+path = "src/lib.rs"
+
+[[bin]]
+name = "ipcalculator"
+path = "src/main.rs"
 
 [dependencies]

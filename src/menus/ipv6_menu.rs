@@ -1,5 +1,3 @@
-use crate::menus::ipv6_menu;
-use crate::utils::ip_classes::check_ip_classes;
 use crate::utils::ipv6;
 use crate::utils::conversions as conv;
 use std::io::{self, Write};

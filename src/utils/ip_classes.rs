@@ -145,7 +145,7 @@ fn classify_ip(first: u8, second: u8, third: u8, fourth: u8) {
         return;
     }
     
-    if first >= 240 && first <= 255 {
+    if first >= 240 {
         if first == 255 && second == 255 && third == 255 && fourth == 255 {
             println!("\n Type: Limited Broadcast");
             println!(" Usage: Broadcast to all hosts on local network");
