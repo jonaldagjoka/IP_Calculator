@@ -170,17 +170,15 @@ cargo test
 └────────────────────────────────────────────────────┘
  (a) Llogarit Network Prefix (NetID)
  (b) Llogarit IP Range
- (c) Llogarit Numër Hostesh (2^(128-prefix))
- (d) IPv6 Expansion (shkruaj formën e plotë)
- (e) IPv6 Compression (shkurto adresën)
- (f) Hex to Decimal Conversion
- (g) Decimal to Hex Conversion
- (h) IPv6 Address Type Identifier
- (i) Generate Link-Local Address
- (j) Generate EUI-64 Address
- (k) Subnetting
- (l) Supernetting
- (m) DHCP Range Calculation
+ (c) IPv6 Expansion (shkruaj formën e plotë)
+ (d) IPv6 Compression (shkurto adresën)
+ (e) Hex to Decimal Conversion
+ (f) Decimal to Hex Conversion
+ (g) IPv6 Address Type Identifier
+ (h) Generate EUI-64 Address
+ (i) Subnetting
+ (j) Supernetting
+ (k) DHCP Range Calculation
  (q) Kthehu në Menu Kryesore
   ────────────────────────────────────────────────────
 ```
@@ -192,6 +190,7 @@ cargo test
 
 | Operacioni | Përshkrimi | Shembull Input |
 |-----------|-------------|---------------|
+| **Klasat dhe IP speciale** |Kontrollo Klasat dhe IP speciale | `192.168.1.10/24`
 | **Network ID** | Llogarit adresën e rrjetit | `192.168.1.10/24` |
 | **Broadcast** | Gjen adresën broadcast | `10.0.0.0/8` |
 | **DHCP Range** | Përcakton intervalet e host-eve | `172.16.0.0/16` |
@@ -199,7 +198,9 @@ cargo test
 | **Subnet nga Host-et** | Llogarit maskën për N host | `100` host |
 | **Subnet nga Subnet-et** | Llogarit maskën për N subnet | `4` subnet |
 | **Decimal ↔ Binary** | Konverton sistemet numerike | `255` ose `11111111` |
+| **Binary ↔ Decimal** | Konverton sistemet numerike | `11111111` ose `255` |
 | **CIDR ↔ Mask** | Konverton formatet e notacionit | `/24` ose `255.255.255.0` |
+| **Mask ↔ CIDR** | Konverton formatet e notacionit | `255.255.255.0` ose `/24` |
 | **Wildcard Mask** | Llogarit wildcard | `255.255.255.0` |
 | **VLSM** | Subnetting me gjatësi variabile | Kërkesa të shumta |
 | **Supernetting** | Agreguesi i rrjeteve | Rrjete të shumta |
@@ -215,14 +216,15 @@ cargo test
 |-----------|-------------|---------------|
 | **Network Prefix** | Llogarit network prefix | `2001:db8::1/64` |
 | **IP Range** | Adresa e parë dhe e fundit | `fe80::/10` |
-| **Numri i Host-eve** | Llogarit 2^(128-prefix) | `2001:db8::/48` |
 | **Zgjerimi** | Forma e plotë e adresës | `2001:db8::1` |
 | **Kompresimi** | Forma e shkurtuar | `2001:0db8:0000:0000::0001` |
 | **Hex ↔ Decimal** | Konverton segmentet | `2001` ose `8193` |
+| **Decimal ↔ Hex** | Konverton segmentet | `8193` ose `2001` |
 | **Tipi i Adresës** | Identifikon tipin | Çdo IPv6 |
 | **Gjenerimi EUI-64** | Gjenero nga MAC | MAC + prefix |
 | **Subnetting** | Krijo subnete | Rrjet + numër |
 | **Supernetting** | Agreguesi i rrugëve | Dy rrjete |
+| **DHCP Range Calculation** |Llogairt numrin e hosteve |  `2001:db8:2000::/64 `
 
 
 ---
