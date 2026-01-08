@@ -176,24 +176,76 @@ pub fn subnetting() {
 
 // m: Supernetting
 pub fn supernetting() {
-	let net1 = read_input("Vendos rrjetin e parë (xxxx:...:/64): ");
-	let net2 = read_input("Vendos rrjetin e dytë (xxxx:...:/64): ");
-	if let (Some((ip1, p1)), Some((ip2, p2))) = (ipv6_str_to_u128(&net1), ipv6_str_to_u128(&net2)) {
-		if p1 != p2 { println!("Rjetat duhet të kenë të njëjtin prefiks"); return; }
-		let xor = ip1 ^ ip2;
-		let mut bits = 0u32;
-		for i in (0..128).rev() {
-			if ((xor >> i) & 1) != 0 {
-				bits = 128 - i - 1;
-				break;
-			}
-		}
-		let supernet_prefix = (128 - bits - 1).max(0);
-		let mask = mask_from_prefix_v6(supernet_prefix as u8);
-		let supernet = ip1 & mask;
-		println!("Supernet: {}/{}", u128_to_ipv6_string(supernet), supernet_prefix);
-	} else { println!("Input i pavlefshëm") }
+	println!("Kushtet:");
+    println!("- Rrjetet të jenë të njëpasnjëshme");
+    println!("- Numri i rrjeteve fuqi e dyshit");
+    println!("- Të kenë të njëjtin prefiks");
+	println!("______________________________________");
+    println!("Supernetting me x rrjete");
+    let n: usize = read_input("Vendos numrin e rrjeteve: ")
+        .parse()
+        .unwrap_or(0);
+
+    if n < 2 || (n & (n - 1)) != 0 {
+        println!(" Numri i rrjeteve duhet të jetë fuqi e dyshit");
+        return;
+    }
+
+    let mut networks: Vec<(u128, u8)> = Vec::new();
+
+    for i in 0..n {
+        let input = read_input(&format!(
+            "Vendos rrjetin {} (xxxx::/64): ",
+            i + 1
+        ));
+        if let Some((ip,prefix)) = ipv6_str_to_u128(&input) {
+           let mask=mask_from_prefix_v6(prefix);
+		   let network_ip=ip & mask;
+		   networks.push((network_ip,prefix));
+        } else {
+            println!(" Input i pavlefshëm");
+            return;
+        }
+    }
+
+    let prefix = networks[0].1;
+
+    if networks.iter().any(|(_, p)| *p != prefix) {
+        println!(" Të gjitha rrjetet duhet të kenë të njëjtin prefiks");
+        return;
+    }
+
+    let mask = mask_from_prefix_v6(prefix);
+    let block_size: u128 = 1u128 << (128 - prefix);
+
+    let mut ips: Vec<u128> = networks.iter().map(|(ip, _)| *ip).collect();
+    ips.sort();
+
+    for ip in &ips {
+        if ip & mask != *ip {
+            println!(" IPv6 nuk është Network ID");
+            return;
+        }
+    }
+
+    for i in 0..ips.len() - 1 {
+        if ips[i + 1] != ips[i] + block_size {
+            println!(" Rrjetet nuk janë të njëpasnjëshme");
+            return;
+        }
+    }
+
+    let new_prefix = prefix - (n as f32).log2() as u8;
+    let supernet_mask = mask_from_prefix_v6(new_prefix);
+    let supernet_ip = ips[0] & supernet_mask;
+
+    println!(
+        " Supernet IPv6: {}/{}",
+        u128_to_ipv6_string(supernet_ip),
+        new_prefix
+    );
 }
+
 
 // n: DHCP Range Calculation
 pub fn dhcp_range_calculation() {

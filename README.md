@@ -371,10 +371,19 @@ Subnet 6: 192.168.2.160/27
 Subnet 7: 192.168.2.192/27
 
 ### Supernetting
-Supernetting: krijimi i një rrjeti më të madh nga dy rrjete ekzistuese
-Vendos rrjetin e parë (x.x.x.x/24): 192.168.2.0/24 
-Vendos rrjetin e dytë (x.x.x.x/24): 192.168.4.0/24
-Supernet: 192.128.0.0/10
+Supernetting
+Kushtet:
+- Rrjetet të jenë të njëpasnjëshme
+- Numri i rrjeteve fuqi e dyshit
+- Të kenë të njëjtin prefiks
+______________________________________
+Supernetting me x rrjete
+Vendos numrin e rrjeteve: 4
+Vendos rrjetin 1 (x.x.x.x/24): 192.168.2.0/24
+Vendos rrjetin 2 (x.x.x.x/24): 192.168.3.0/24
+Vendos rrjetin 3 (x.x.x.x/24): 192.168.4.0/24
+Vendos rrjetin 4 (x.x.x.x/24): 192.168.5.0/24
+ Supernet: 192.168.0.0/22
 ```
 ## Teste Manuale IPv6
 ```bash
@@ -422,9 +431,18 @@ Subnete (/66):
   2001:db8:0:0:c000::/66
 
 ### Supernetting
-Vendos rrjetin e parë (xxxx:...:/64): 2001:db8:1000::/64
-Vendos rrjetin e dytë (xxxx:...:/64): 2001:db8:2000::/64
-Supernet: 2001:db8:1000::/93
+Kushtet:
+- Rrjetet të jenë të njëpasnjëshme
+- Numri i rrjeteve fuqi e dyshit
+- Të kenë të njëjtin prefiks
+______________________________________
+Supernetting me x rrjete
+Vendos numrin e rrjeteve: 4
+Vendos rrjetin 1 (xxxx::/64): 2001:db8:0:0::/64
+Vendos rrjetin 2 (xxxx::/64): 2001:db8:0:1::/64
+Vendos rrjetin 3 (xxxx::/64): 2001:db8:0:2::/64
+Vendos rrjetin 4 (xxxx::/64): 2001:db8:0:3::/64
+ Supernet IPv6: 2001:db8::/62
 
 ### DHCP Range Calculation
 Vendos rrjetin (xxxx:...:/64): 2001:db8:2000::/64

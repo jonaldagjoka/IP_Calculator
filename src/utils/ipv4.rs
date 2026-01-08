@@ -139,25 +139,73 @@ pub fn vlsm_calculation() {
 }
 
 pub fn supernetting() {
-	println!("Supernetting: krijimi i një rrjeti më të madh nga dy rrjete ekzistuese");
-	let net1 = read_input("Vendos rrjetin e parë (x.x.x.x/24): ");
-	let net2 = read_input("Vendos rrjetin e dytë (x.x.x.x/24): ");
-	if let (Some((ip1, p1)), Some((ip2, p2))) = (ipv4_str_to_u32(&net1), ipv4_str_to_u32(&net2)) {
-		if p1 != p2 { println!("Rjetat duhet të kenë të njëjtin prefiks"); return; }
-		let xor = ip1 ^ ip2;
-		let mut bits = 0u32;
-		for i in (0..32).rev() {
-			if ((xor >> i) & 1) != 0 {
-				bits = 32 - i - 1;
-				break;
-			}
-		}
-		let supernet_prefix = (32 - bits - 1).max(0);
-		let mask = mask_from_prefix_v4(supernet_prefix as u8);
-		let supernet = ip1 & mask;
-		println!("Supernet: {}/{}", u32_to_ipv4_string(supernet), supernet_prefix);
-	} else { println!("Rjetet e pavlefshme"); }
+	println!("Supernetting");
+    println!("Kushtet:");
+    println!("- Rrjetet të jenë të njëpasnjëshme");
+    println!("- Numri i rrjeteve fuqi e dyshit");
+    println!("- Të kenë të njëjtin prefiks");
+	println!("______________________________________");
+    println!("Supernetting me x rrjete");
+
+    let n: usize = read_input("Vendos numrin e rrjeteve: ")
+        .parse()
+        .unwrap_or(0);
+
+    if n < 2 || (n & (n - 1)) != 0 {
+        println!(" Numri i rrjeteve duhet të jetë fuqi e dyshit (2,4,8,16,32,64,128,...");
+        return;
+    }
+
+    let mut networks: Vec<(u32, u8)> = Vec::new();
+
+    for i in 0..n {
+        let input = read_input(&format!("Vendos rrjetin {} (x.x.x.x/24): ", i + 1));
+        if let Some(net) = ipv4_str_to_u32(&input) {
+            networks.push(net);
+        } else {
+            println!(" Input i pavlefshëm");
+            return;
+        }
+    }
+
+    let prefix = networks[0].1;
+
+    if networks.iter().any(|(_, p)| *p != prefix) {
+        println!("Të gjitha rrjetet duhet të kenë të njëjtin prefiks");
+        return;
+    }
+
+    let mask = mask_from_prefix_v4(prefix);
+    let block_size = 1u32 << (32 - prefix);
+
+    let mut ips: Vec<u32> = networks.iter().map(|(ip, _)| *ip).collect();
+    ips.sort();
+
+    for ip in &ips {
+        if ip & mask != *ip {
+            println!(" IP nuk është Network ID");
+            return;
+        }
+    }
+
+    for i in 0..ips.len() - 1 {
+        if ips[i + 1] != ips[i] + block_size {
+            println!(" Rrjetet nuk janë të njëpasnjëshme");
+            return;
+        }
+    }
+
+    let new_prefix = prefix - (n as f32).log2() as u8;
+    let supernet_mask = mask_from_prefix_v4(new_prefix);
+    let supernet_ip = ips[0] & supernet_mask;
+
+    println!(
+        " Supernet: {}/{}",
+        u32_to_ipv4_string(supernet_ip),
+        new_prefix
+    );
 }
+
 
 pub fn dhcp_range_calculation() {
 	let network = read_input("Vendos rrjetin (x.x.x.x/24): ");
