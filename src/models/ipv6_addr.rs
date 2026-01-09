@@ -94,15 +94,15 @@ impl IPv6Address {
 
     /// Check if the address is link-local
     pub fn is_link_local(&self) -> bool {
-        // fe80::/10 -> top 10 bits equal 0x3fa
-        ((self.ip >> 118) & 0x3ff) == 0x3fa
+        let mask: u128=0xffc0_0000_0000_0000_0000_0000_0000_0000;
+         let link_local: u128 = 0xfe80_0000_0000_0000_0000_0000_0000_0000;
+        (self.ip & mask)==link_local
     }
 
     /// Check if the address is private/unique local
     pub fn is_private(&self) -> bool {
-        // Unique local addresses: fc00::/7 (fc00 or fd00)
-        let first_byte = (self.ip >> 120) as u8;
-        (first_byte & 0xfe) == 0xfc
+    
+        (self.ip >> 121) == 0b1111110
     }
 }
 

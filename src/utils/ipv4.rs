@@ -29,46 +29,70 @@ pub fn calculate_broadcast_address() {
 }
 
 pub fn calculate_subnet_mask_from_hosts() {
-	let input = read_input("Vendos numrin e hosteve: ");
-	if let Ok(req_hosts) = input.parse::<u128>() {
-		if req_hosts == 0 {
-			println!("Vendos të paktën 1 host");
-			return;
-		}
-		let mut bits = 1u32;
-		loop {
-			if bits >= 32 {
-				println!("Numër shumë i madh i hosteve");
-				return;
-			}
-			let available_hosts = (1u128 << bits) - 2;
-			if available_hosts >= req_hosts {
-				break;
-			}
-			bits += 1;
-		}
-		let prefix = 32u32 - bits;
-		let mask = mask_from_prefix_v4(prefix as u8);
-		println!("Prefix: /{}  Mask: {}", prefix, u32_to_ipv4_string(mask));
-	} else { println!("Numër i pavlefshëm") }
+    let input = read_input("Vendos numrin e hosteve: ");
+    if let Ok(req_hosts) = input.parse::<u32>() {
+        if req_hosts == 0 {
+            println!("Vendos të paktën 1 host");
+            return;
+        }
+        
+        let total_needed = req_hosts + 2;
+        
+        let mut bits = 0u32;
+        let mut available_hosts = 1u32;
+        
+        while available_hosts < total_needed {
+            bits += 1;
+            if bits > 30 {  
+                println!("Numër shumë i madh i hosteve");
+                return;
+            }
+            available_hosts = 2u32.pow(bits);
+        }
+        
+        let prefix = 32 - bits;
+        let mask = mask_from_prefix_v4(prefix as u8);
+        
+        println!("Numri i hosteve të kërkuar: {}", req_hosts);
+        println!("Numri i hosteve të disponueshëm: {}", available_hosts - 2);
+        println!("Prefix: /{}", prefix);
+        println!("Subnet Mask: {}", u32_to_ipv4_string(mask));
+    } else {
+        println!("Numër i pavlefshëm")
+    }
 }
 
 pub fn calculate_subnet_mask_from_subnets() {
-	let parent = read_input("Vendos rrjetin kryesor (format x.x.x.x/24): ");
-	let subnets = read_input("Vendos numrin e subnetave të kërkuara: ");
-	if let Some((_ip, parent_prefix)) = ipv4_str_to_u32(&parent) {
-		if let Ok(subs) = subnets.parse::<u32>() {
-			let mut bits = 0u8;
-			while (1u128 << bits) < subs as u128 { bits += 1; }
-			let new_prefix = parent_prefix + bits;
-			if new_prefix > 32 { println!("Nuk mund të ndahet më tej"); }
-			else {
-				let mask = mask_from_prefix_v4(new_prefix);
-				println!("New prefix: /{}  Mask: {}", new_prefix, u32_to_ipv4_string(mask));
-			}
-		} else { println!("Numër i pavlefshëm i subnetave"); }
-	} else { println!("Rjeti kryesor i pavlefshëm") }
+    let parent = read_input("Vendos rrjetin kryesor (format x.x.x.x/24): ");
+    let subnets = read_input("Vendos numrin e subnetave të kërkuara: ");
+
+    if let Some((_ip, parent_prefix)) = ipv4_str_to_u32(&parent) {
+        if let Ok(subs) = subnets.parse::<u32>() {
+            let mut bits = 0u8;
+            while (1u128 << bits) < subs as u128 {
+                bits += 1;
+            }
+
+            let new_prefix = parent_prefix + bits;
+            if new_prefix > 32 {
+                println!("Numri i subnetave është shumë i madh për këtë rrjet");
+                return;
+            }
+
+            let mask = mask_from_prefix_v4(new_prefix);
+            println!(
+                "New prefix: /{}  Mask: {}",
+                new_prefix,
+                u32_to_ipv4_string(mask)
+            );
+        } else {
+            println!("Numër i pavlefshëm i subnetave");
+        }
+    } else {
+        println!("Rjeti kryesor i pavlefshëm");
+    }
 }
+
 
 pub fn cidr_to_subnet_mask() {
 	let cidr = read_input("Vendos prefiksin CIDR (0-32): ");
@@ -82,60 +106,123 @@ pub fn cidr_to_subnet_mask() {
 pub fn subnet_mask_to_cidr() {
 	let input = read_input("Vendos subnet mask (x.x.x.x): ");
 	if let Some((mask, _)) = ipv4_str_to_u32(&input) {
-		let mut prefix = 0u8;
-		let mut test = 0x80000000u32;
-		while (mask & test) != 0 && prefix < 32 {
-			prefix += 1;
-			test >>= 1;
+		let mut prefix :u8= 0;
+		let mut zero_seen=false;
+
+		for i in (0..32).rev(){
+			let bit =(mask>>i)&1;
+			if bit==1{
+				if zero_seen{
+					println!("Subnet mask INVALID (1 pas 0)");
+                    return;
+				}
+				prefix+=1;
+			}else{
+				zero_seen=true;
+			}
 		}
 		println!("CIDR: /{}", prefix);
 	} else { println!("Subnet mask e pavlefshme") }
 }
+fn parse_ipv4_only(s: &str) -> Option<u32> {
+    let parts: Vec<&str> = s.split('.').collect();
+    if parts.len() != 4 {
+        return None;
+    }
 
-pub fn wildcard_mask_calculation() {
-	let input = read_input("Vendos CIDR (x.x.x.x/24) ose Subnet Mask (x.x.x.x): ");
-	
-	// Check if input contains '/' for CIDR notation
-	if input.contains('/') {
-		// Parse as CIDR
-		if let Some((_ip, prefix)) = ipv4_str_to_u32(&input) {
-			let mask = mask_from_prefix_v4(prefix);
-			let wildcard = !mask;
-			println!("Wildcard Mask: {}", u32_to_ipv4_string(wildcard));
-		} else {
-			println!("Input i pavlefshëm");
-		}
-	} else {
-		// Parse as direct subnet mask
-		if let Some((mask, _)) = ipv4_str_to_u32(&input) {
-			let wildcard = !mask;
-			println!("Wildcard Mask: {}", u32_to_ipv4_string(wildcard));
-		} else {
-			println!("Input i pavlefshëm");
-		}
-	}
+    let mut ip = 0u32;
+    for part in parts {
+        let octet = part.parse::<u8>().ok()?;
+        ip = (ip << 8) | octet as u32;
+    }
+    Some(ip)
 }
 
+pub fn wildcard_mask_calculation() {
+    let input = read_input("Vendos CIDR (x.x.x.x/24) ose Subnet Mask (x.x.x.x): ");
+
+    if input.contains('/') {
+        if let Some((_ip, prefix)) = ipv4_str_to_u32(&input) {
+            let mask = mask_from_prefix_v4(prefix);
+            let wildcard = !mask;
+            println!("Wildcard Mask: {}", u32_to_ipv4_string(wildcard));
+        } else {
+            println!("CIDR i pavlefshëm");
+        }
+        return;
+    }
+
+    if let Some(mask) = parse_ipv4_only(&input) {
+        // validim subnet mask
+        let mut zero_seen = false;
+        for i in (0..32).rev() {
+            let bit = (mask >> i) & 1;
+            if bit == 1 {
+                if zero_seen {
+                    println!("Subnet mask INVALID (1 pas 0)");
+                    return;
+                }
+            } else {
+                zero_seen = true;
+            }
+        }
+
+        let wildcard = !mask;
+        println!("Wildcard Mask: {}", u32_to_ipv4_string(wildcard));
+    } else {
+        println!("Input i pavlefshëm");
+    }
+}
+
+
+
 pub fn vlsm_calculation() {
-	println!("VLSM: Variable Length Subnet Mask");
-	let parent = read_input("Vendos rrjetin kryesor (x.x.x.x/24): ");
-	let num_subnets = read_input("Vendos numrin e subneteve të kërkuara: ");
-	if let Some((ip, parent_prefix)) = ipv4_str_to_u32(&parent) {
-		if let Ok(subs) = num_subnets.parse::<u32>() {
-			let mut bits_needed = 0u8;
-			while (1u128 << bits_needed) < subs as u128 { bits_needed += 1; }
-			let new_prefix = parent_prefix + bits_needed;
-			if new_prefix > 32 { println!("Nuk mund të ndahet më tej"); return; }
-			let mask = mask_from_prefix_v4(parent_prefix);
-			let network = ip & mask;
-			let subnet_size = 1u32 << (32 - new_prefix as u32);
-			for i in 0..subs.min(16) {
-				let subnet_ip = network + (subnet_size * i);
-				println!("Subnet {}: {}/{}", i + 1, u32_to_ipv4_string(subnet_ip), new_prefix);
-			}
-			if subs > 16 { println!("... and {} more", subs - 16); }
-		} else { println!("Numër i pavlefshëm i subnetave"); }
-	} else { println!("Rjeti kryesor i pavlefshëm"); }
+    println!("VLSM: Variable Length Subnet Mask");
+
+    let parent = read_input("Vendos rrjetin kryesor (x.x.x.x/24): ");
+    let num_subnets = read_input("Vendos numrin e subneteve të kërkuara: ");
+
+    if let Some((ip, parent_prefix)) = ipv4_str_to_u32(&parent) {
+        if let Ok(subs) = num_subnets.parse::<u32>() {
+
+            let mut bits = 0u8;
+            while (1u128 << bits) < subs as u128 {
+                bits += 1;
+            }
+
+            let new_prefix = parent_prefix + bits;
+            if new_prefix > 32 {
+                println!("Nuk mund të ndahet më tej");
+                return;
+            }
+
+            let parent_mask = mask_from_prefix_v4(parent_prefix);
+            let network = ip & parent_mask;
+
+            let subnet_size = 1u32 << (32 - new_prefix);
+
+            println!("New Prefix: /{}", new_prefix);
+
+            for i in 0..subs.min(16) {
+                let subnet_ip = network + subnet_size * i;
+                println!(
+                    "Subnet {}: {}/{}",
+                    i + 1,
+                    u32_to_ipv4_string(subnet_ip),
+                    new_prefix
+                );
+            }
+
+            if subs > 16 {
+                println!("... and {} more", subs - 16);
+            }
+
+        } else {
+            println!("Numër i pavlefshëm i subnetave");
+        }
+    } else {
+        println!("Rjeti kryesor i pavlefshëm");
+    }
 }
 
 pub fn supernetting() {
@@ -194,8 +281,8 @@ pub fn supernetting() {
             return;
         }
     }
-
-    let new_prefix = prefix - (n as f32).log2() as u8;
+    let bits=n.trailing_zeros() as u8;
+    let new_prefix = prefix - bits;
     let supernet_mask = mask_from_prefix_v4(new_prefix);
     let supernet_ip = ips[0] & supernet_mask;
 
